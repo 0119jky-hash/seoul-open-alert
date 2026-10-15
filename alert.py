@@ -13,7 +13,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 CONFIG = json.load(open(os.path.join(ROOT, "config.json"), encoding="utf-8"))
 SEEN_PATH = os.path.join(ROOT, "state", "seen.json")
 SERVICE_KEY = os.environ.get("DATA_GO_KR_KEY", "")
-PAGE_SIZE = 1000
+PAGE_SIZE = 100
 
 # 필드 이름은 API 버전마다 달라서 후보를 순서대로 찾는다.
 F_ID = ["ykiho", "MNG_NO", "mgtNo", "MGT_NO", "관리번호"]
