@@ -267,6 +267,9 @@ def main():
     if dry:
         for m in msgs:
             print("----\n" + m)
+    elif msgs and not os.environ.get("KAKAO_REFRESH_TOKEN"):
+        print("[카카오] 아직 연결 전이라 발송을 건너뜁니다 (대시보드는 갱신)")
+        dry = True
     elif msgs:
         token = kakao_token()
         for m in msgs:

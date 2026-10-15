@@ -54,6 +54,7 @@ jobs:
           rm -f .new_refresh_token
 
       - name: 알림 이력 저장
+        if: always()
         run: |
           if [ -n "$(git status --porcelain state docs)" ]; then
             git config user.name "seoul-open-alert"
