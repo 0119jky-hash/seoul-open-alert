@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-15 23:07",
+ "updatedAt": "2026-10-16 00:04",
  "watchGu": [],
  "watchTypes": [
   "약국",
@@ -18,7 +18,7 @@
    "subj": "",
    "tel": "070-4242-0923",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMD120263010033084000039",
@@ -31,7 +31,7 @@
    "subj": "",
    "tel": "",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMA120263130033041100029",
@@ -44,7 +44,7 @@
    "subj": "피부과",
    "tel": "02-2038-7389",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMA120263150037041100025",
@@ -57,7 +57,7 @@
    "subj": "",
    "tel": "02-6953-1512",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMA120263220033041100214",
@@ -70,7 +70,7 @@
    "subj": "성형외과, 피부과",
    "tel": "02-0000-0000",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMD120263010033084000038",
@@ -83,7 +83,7 @@
    "subj": "",
    "tel": "",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMD120263230034084000027",
@@ -96,7 +96,7 @@
    "subj": "",
    "tel": "02-2202-8872",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMA120263230034041100062",
@@ -109,7 +109,7 @@
    "subj": "내과, 외과, 정형외과",
    "tel": "02-6287-0100",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMD120263030033084000019",
@@ -122,7 +122,7 @@
    "subj": "",
    "tel": "",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMA120263240033041100029",
@@ -135,7 +135,7 @@
    "subj": "내과",
    "tel": "02-2038-4088",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMA120263220033041100213",
@@ -148,7 +148,7 @@
    "subj": "피부과",
    "tel": "02-6671-6719",
    "firstSeen": "20261015",
-   "notified": false
+   "notified": true
   },
   {
    "id": "PHMD120263060034084000011",
