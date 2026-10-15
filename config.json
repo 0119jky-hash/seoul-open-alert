@@ -1,13 +1,37 @@
 {
-  "_설명": "gu: 알림 받을 서울 구(비우면 서울 전체). types: 받을 업종(sources의 이름). sources: 업종별 API와 종류 필터.",
+  "_설명": "gu: 알림 받을 서울 구(비우면 서울 전체). types: 받을 업종(sources의 이름). sources: 업종별 API와 종류 필터. dashboard_days: 대시보드에 매일 다시 조회하는 기간.",
   "gu": [],
-  "types": ["약국", "의원", "병원"],
+  "types": [
+    "약국",
+    "의원",
+    "병원"
+  ],
   "lookback_days": 7,
+  "dashboard_days": 30,
   "sources": {
-    "약국": {"url": "https://apis.data.go.kr/1741000/pharmacies/info"},
-    "의원": {"url": "https://apis.data.go.kr/1741000/clinics/info", "kinds": ["의원"]},
-    "치과의원": {"url": "https://apis.data.go.kr/1741000/clinics/info", "kinds": ["치과의원"]},
-    "한의원": {"url": "https://apis.data.go.kr/1741000/clinics/info", "kinds": ["한의원"]},
-    "병원": {"url": "https://apis.data.go.kr/1741000/hospitals/info"}
+    "약국": {
+      "url": "https://apis.data.go.kr/1741000/pharmacies/info"
+    },
+    "의원": {
+      "url": "https://apis.data.go.kr/1741000/clinics/info",
+      "kinds": [
+        "의원"
+      ]
+    },
+    "치과의원": {
+      "url": "https://apis.data.go.kr/1741000/clinics/info",
+      "kinds": [
+        "치과의원"
+      ]
+    },
+    "한의원": {
+      "url": "https://apis.data.go.kr/1741000/clinics/info",
+      "kinds": [
+        "한의원"
+      ]
+    },
+    "병원": {
+      "url": "https://apis.data.go.kr/1741000/hospitals/info"
+    }
   }
 }

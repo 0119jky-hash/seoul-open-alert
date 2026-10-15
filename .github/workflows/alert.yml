@@ -31,7 +31,7 @@ jobs:
           KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
           KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
           KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
-          ALERT_LINK: ${{ github.server_url }}/${{ github.repository }}/actions
+          ALERT_LINK: https://claude.ai/artifact/89uqcW5PT79eQUoAoaFq9z
         run: |
           MODE="${{ github.event.inputs.mode || 'run' }}"
           mkdir -p state
@@ -55,10 +55,10 @@ jobs:
 
       - name: 알림 이력 저장
         run: |
-          if [ -n "$(git status --porcelain state)" ]; then
+          if [ -n "$(git status --porcelain state docs)" ]; then
             git config user.name "seoul-open-alert"
             git config user.email "actions@users.noreply.github.com"
-            git add state
+            git add state docs
             git commit -m "알림 이력 갱신 $(TZ=Asia/Seoul date +%F)"
             git push
           fi

@@ -120,21 +120,20 @@ def fetch_recent(url, since):
     return rows
 
 
-def collect():
-    since = (datetime.now(KST) - timedelta(days=CONFIG.get("lookback_days", 7))).strftime("%Y%m%d")
-    want_gu = set(CONFIG.get("gu") or [])
-    sources = CONFIG.get("sources", {})
+F_TEL = ["TELNO"]
+DASH_PATH = os.path.join(ROOT, "docs", "data", "alerts.json")
+
+
+def collect(days):
+    """서울 전체, 모든 업종(sources)의 최근 days일 신규 개설을 모은다."""
+    since = (datetime.now(KST) - timedelta(days=days)).strftime("%Y%m%d")
     cache, out = {}, []
-    for typ in CONFIG.get("types", []):
-        src = sources.get(typ)
-        if not src:
-            print(f"[건너뜀] {typ}: sources에 없음")
-            continue
+    for typ, src in CONFIG.get("sources", {}).items():
         url = src["url"]
         if url not in cache:
             try:
                 cache[url] = fetch_recent(url, since)
-                print(f"[조회] {url.split('/')[-2]}: 서울 신규 후보 {len(cache[url])}건")
+                print(f"[조회] {url.split('/')[-2]}: 서울 {since} 이후 {len(cache[url])}건")
             except Exception as e:
                 print(f"[오류] {typ} 조회 실패: {e}")
                 ERRORS.append(typ)
@@ -146,17 +145,40 @@ def collect():
                 continue
             addr = pick(r, F_ROAD) or pick(r, F_LOT)
             gu = gu_of(addr) or gu_of(pick(r, F_LOT))
-            if not gu or (want_gu and gu not in want_gu):
-                continue
             d = ymd(pick(r, F_DATE))
-            if not d or d < since or not is_open(pick(r, F_STATUS)):
+            if not gu or not d or d < since or not is_open(pick(r, F_STATUS)):
                 continue
             subj = ", ".join([x.strip() for x in pick(r, F_SUBJ).split(",") if x.strip()][:3])
             ident = pick(r, F_ID) or f"{typ}|{pick(r, F_NAME)}|{addr}"
-            out.append({"id": ident, "type": kind or typ, "name": pick(r, F_NAME), "gu": gu,
-                        "date": d, "addr": re.sub(r"^서울특별시\s+", "", addr), "subj": subj})
+            out.append({"id": ident, "group": typ, "type": kind or typ, "name": pick(r, F_NAME),
+                        "gu": gu, "date": d, "addr": re.sub(r"^서울특별시\s+", "", addr),
+                        "subj": subj, "tel": pick(r, F_TEL)})
     out.sort(key=lambda x: (x["date"], x["gu"]), reverse=True)
     return out
+
+
+def write_dashboard(found, notified_ids):
+    """대시보드 데이터(docs/data/alerts.json)를 누적 갱신한다. 최근 90일만 보관."""
+    today = datetime.now(KST).strftime("%Y%m%d")
+    keep_from = (datetime.now(KST) - timedelta(days=90)).strftime("%Y%m%d")
+    old = {}
+    if os.path.exists(DASH_PATH):
+        try:
+            old = {x["id"]: x for x in json.load(open(DASH_PATH, encoding="utf-8")).get("items", [])}
+        except Exception:
+            old = {}
+    for x in found:
+        prev = old.get(x["id"], {})
+        old[x["id"]] = {**x, "firstSeen": prev.get("firstSeen", today),
+                        "notified": prev.get("notified", False) or x["id"] in notified_ids}
+    items = sorted([x for x in old.values() if x["date"] >= keep_from],
+                   key=lambda x: (x["date"], x["gu"]), reverse=True)
+    os.makedirs(os.path.dirname(DASH_PATH), exist_ok=True)
+    json.dump({"updatedAt": datetime.now(KST).strftime("%Y-%m-%d %H:%M"),
+               "watchGu": CONFIG.get("gu") or [], "watchTypes": CONFIG.get("types", []),
+               "items": items},
+              open(DASH_PATH, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print(f"[대시보드] {len(items)}건 저장")
 
 
 # ---------- 카카오 ----------
@@ -211,14 +233,9 @@ def pack(items, header):
 
 
 def probe():
-    since = (datetime.now(KST) - timedelta(days=CONFIG.get("lookback_days", 7))).strftime("%Y%m%d")
-    for typ, src in CONFIG.get("sources", {}).items():
-        try:
-            rows = fetch_recent(src["url"], since)
-            print(f"[{typ}] 서울 {since} 이후 {len(rows)}건:",
-                  [(pick(r, F_NAME), pick(r, F_KIND), pick(r, F_DATE)) for r in rows[:5]])
-        except Exception as e:
-            print(f"[{typ}] 오류: {str(e)[:300]}")
+    found = collect(CONFIG.get("lookback_days", 7))
+    for x in found[:15]:
+        print(x)
 
 
 def main():
@@ -227,14 +244,20 @@ def main():
     dry = "--dry" in sys.argv
     seen = set(json.load(open(SEEN_PATH, encoding="utf-8"))) if os.path.exists(SEEN_PATH) else set()
     first_run = not os.path.exists(SEEN_PATH)
-    found = collect()
+    found = collect(CONFIG.get("dashboard_days", 30))
     if ERRORS:
         print(f"[중단] 조회 실패: {', '.join(ERRORS)} — 이번 회차는 발송과 이력 저장을 건너뜁니다")
         sys.exit(1)
-    new = [x for x in found if x["id"] not in seen]
-    print(f"[결과] 기간 내 {len(found)}건, 새로 알릴 {len(new)}건")
+    since = (datetime.now(KST) - timedelta(days=CONFIG.get("lookback_days", 7))).strftime("%Y%m%d")
+    want_gu = set(CONFIG.get("gu") or [])
+    want_types = set(CONFIG.get("types", []))
+    recent = [x for x in found if x["date"] >= since and x["group"] in want_types
+              and (not want_gu or x["gu"] in want_gu)]
+    new = [x for x in recent if x["id"] not in seen]
+    print(f"[결과] 대시보드 {len(found)}건, 알림 대상 기간 내 {len(recent)}건, 새로 알릴 {len(new)}건")
     today = datetime.now(KST).strftime("%m/%d")
     link = os.environ.get("ALERT_LINK", "https://github.com")
+    write_dashboard(found, set() if dry else {x["id"] for x in new})
     if new:
         msgs = pack(new, f"🏥 서울 신규개설 {len(new)}건 ({today})")
     elif first_run:
@@ -251,7 +274,7 @@ def main():
             time.sleep(1)
         print(f"[카카오] {len(msgs)}개 메시지 발송")
     if not dry:
-        seen |= {x["id"] for x in found}
+        seen |= {x["id"] for x in recent}
         os.makedirs(os.path.dirname(SEEN_PATH), exist_ok=True)
         json.dump(sorted(seen), open(SEEN_PATH, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
 
