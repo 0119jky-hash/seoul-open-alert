@@ -34,9 +34,11 @@ jobs:
           ALERT_LINK: ${{ github.server_url }}/${{ github.repository }}/actions
         run: |
           MODE="${{ github.event.inputs.mode || 'run' }}"
-          if [ "$MODE" = "probe" ]; then python alert.py --probe
-          elif [ "$MODE" = "dry" ]; then python alert.py --dry
-          else python alert.py; fi
+          mkdir -p state
+          set -o pipefail
+          if [ "$MODE" = "probe" ]; then python alert.py --probe 2>&1 | tee state/last_run.txt
+          elif [ "$MODE" = "dry" ]; then python alert.py --dry 2>&1 | tee state/last_run.txt
+          else python alert.py 2>&1 | tee state/last_run.txt; fi
 
       - name: 카카오 리프레시 토큰 갱신
         if: hashFiles('.new_refresh_token') != ''
