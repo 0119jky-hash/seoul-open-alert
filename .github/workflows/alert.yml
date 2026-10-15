@@ -1,0 +1,62 @@
+name: 서울 신규개설 알림
+
+on:
+  schedule:
+    - cron: "47 22 * * 0-4"   # 평일(월~금) 오전 7:47 KST
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "run = 실제 발송, dry = 발송 없이 미리보기, probe = API 구조 확인"
+        default: run
+        type: choice
+        options: [run, dry, probe]
+
+permissions:
+  contents: write
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 조회 및 발송
+        env:
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          ALERT_LINK: ${{ github.server_url }}/${{ github.repository }}/actions
+        run: |
+          MODE="${{ github.event.inputs.mode || 'run' }}"
+          if [ "$MODE" = "probe" ]; then python alert.py --probe
+          elif [ "$MODE" = "dry" ]; then python alert.py --dry
+          else python alert.py; fi
+
+      - name: 카카오 리프레시 토큰 갱신
+        if: hashFiles('.new_refresh_token') != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -n "$GH_TOKEN" ]; then
+            gh secret set KAKAO_REFRESH_TOKEN --repo "${{ github.repository }}" < .new_refresh_token
+            echo "리프레시 토큰을 Secret에 저장했어요"
+          else
+            echo "::warning::GH_PAT이 없어 새 리프레시 토큰을 저장하지 못했어요"
+          fi
+          rm -f .new_refresh_token
+
+      - name: 알림 이력 저장
+        run: |
+          if [ -n "$(git status --porcelain state)" ]; then
+            git config user.name "seoul-open-alert"
+            git config user.email "actions@users.noreply.github.com"
+            git add state
+            git commit -m "알림 이력 갱신 $(TZ=Asia/Seoul date +%F)"
+            git push
+          fi
