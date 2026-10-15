@@ -7,7 +7,6 @@
     "약국": {"url": "https://apis.data.go.kr/1741000/pharmacies"},
     "의원": {"url": "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList",
              "params": {"sidoCd": "110000", "clCd": "31", "_type": "json"}},
-    "병원": {"url": "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList",
-             "params": {"sidoCd": "110000", "clCd": "21", "_type": "json"}}
+    "병원": {"url": "https://apis.data.go.kr/1741000/hospitals"}
   }
 }
