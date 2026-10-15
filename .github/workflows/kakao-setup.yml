@@ -18,8 +18,11 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: 토큰 발급 후 Secret 저장
+      - uses: actions/checkout@v4
+      - name: 토큰 발급 후 저장
         env:
           REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
           CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
@@ -29,7 +32,7 @@ jobs:
           SECRET_NAME: ${{ github.event.inputs.recipient == '두 번째 받는 사람' && 'KAKAO_REFRESH_TOKEN_2' || 'KAKAO_REFRESH_TOKEN' }}
         run: |
           echo "::add-mask::$CODE"
-          if [ -z "$GH_TOKEN" ]; then echo "::error::GH_PAT Secret이 비어 있어요"; exit 1; fi
+          if [ -z "$CLIENT_SECRET" ]; then echo "::error::KAKAO_CLIENT_SECRET Secret이 비어 있어요"; exit 1; fi
           if [ -z "$REST_KEY" ]; then echo "::error::KAKAO_REST_KEY Secret이 비어 있어요"; exit 1; fi
           ARGS=(-d grant_type=authorization_code -d "client_id=$REST_KEY" --data-urlencode "redirect_uri=$REDIRECT" -d "code=$CODE")
           [ -n "$CLIENT_SECRET" ] && ARGS+=(-d "client_secret=$CLIENT_SECRET")
@@ -41,9 +44,10 @@ jobs:
             exit 1
           fi
           echo "::add-mask::$REFRESH"; echo "::add-mask::$ACCESS"
-          if ! echo -n "$REFRESH" | gh secret set "$SECRET_NAME" --repo "${{ github.repository }}" 2>err.txt; then
-            echo "::error::GitHub Secret 저장 실패 $(head -c 300 err.txt)"; exit 1
-          fi
+          mkdir -p state
+          echo -n "$REFRESH" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:CLIENT_SECRET -base64 -A > "state/$SECRET_NAME.enc"
+          git config user.name "seoul-open-alert"; git config user.email "actions@users.noreply.github.com"
+          git add state && git commit -m "카카오 연결 ($SECRET_NAME)" && git push
           TEMPLATE='{"object_type":"text","text":"✅ 카카오 연결 완료! 이제 서울 신규개설 알림을 이 채팅으로 보내드려요.","link":{"web_url":"https://claude.ai/artifact/89uqcW5PT79eQUoAoaFq9z","mobile_web_url":"https://claude.ai/artifact/89uqcW5PT79eQUoAoaFq9z"}}'
           curl -sS https://kapi.kakao.com/v2/api/talk/memo/default/send \
             -H "Authorization: Bearer $ACCESS" --data-urlencode "template_object=$TEMPLATE" | jq -c .

@@ -185,10 +185,34 @@ def write_dashboard(found, notified_ids):
 RECIPIENTS = [("KAKAO_REFRESH_TOKEN", "나"), ("KAKAO_REFRESH_TOKEN_2", "두 번째 받는 사람")]
 
 
+def enc_path(name):
+    return os.path.join(ROOT, "state", f"{name}.enc")
+
+
+def load_refresh(name):
+    """GitHub Secret이 있으면 그걸, 없으면 저장소의 암호화 파일(state/NAME.enc)을 쓴다."""
+    if os.environ.get(name):
+        return os.environ[name]
+    p = enc_path(name)
+    if os.path.exists(p) and os.environ.get("KAKAO_CLIENT_SECRET"):
+        import subprocess
+        r = subprocess.run(["openssl", "enc", "-d", "-aes-256-cbc", "-pbkdf2", "-pass", "env:KAKAO_CLIENT_SECRET",
+                            "-base64", "-A", "-in", p], capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+    return ""
+
+
+def save_refresh(name, token):
+    import subprocess
+    subprocess.run(["openssl", "enc", "-aes-256-cbc", "-pbkdf2", "-salt", "-pass", "env:KAKAO_CLIENT_SECRET",
+                    "-base64", "-A", "-out", enc_path(name)], input=token, text=True, check=True)
+
+
 def kakao_token(secret_name):
     body = {"grant_type": "refresh_token",
             "client_id": os.environ["KAKAO_REST_KEY"],
-            "refresh_token": os.environ[secret_name]}
+            "refresh_token": load_refresh(secret_name)}
     if os.environ.get("KAKAO_CLIENT_SECRET"):
         body["client_secret"] = os.environ["KAKAO_CLIENT_SECRET"]
     req = urllib.request.Request("https://kauth.kakao.com/oauth/token",
@@ -196,9 +220,8 @@ def kakao_token(secret_name):
     with urllib.request.urlopen(req, timeout=30) as r:
         tok = json.loads(r.read())
     if tok.get("refresh_token"):
-        # 리프레시 토큰이 새로 나오면 워크플로가 같은 이름의 GitHub Secret을 갱신한다.
-        os.makedirs(os.path.join(ROOT, ".new_tokens"), exist_ok=True)
-        open(os.path.join(ROOT, ".new_tokens", secret_name), "w").write(tok["refresh_token"])
+        # 리프레시 토큰이 새로 나오면 암호화 파일을 갱신한다(워크플로가 커밋).
+        save_refresh(secret_name, tok["refresh_token"])
         print(f"[카카오] {secret_name} 갱신됨")
     return tok["access_token"]
 
@@ -272,7 +295,7 @@ def main():
         for m in msgs:
             print("----\n" + m)
     elif msgs:
-        targets = [(n, who) for n, who in RECIPIENTS if os.environ.get(n)]
+        targets = [(n, who) for n, who in RECIPIENTS if load_refresh(n)]
         if not targets:
             print("[카카오] 아직 연결 전이라 발송을 건너뜁니다 (대시보드는 갱신)")
             dry = True
