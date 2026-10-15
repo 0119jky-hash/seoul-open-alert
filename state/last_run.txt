@@ -1,6 +1,78 @@
+--- https://apis.data.go.kr/1741000/pharmacies {'pageNo': 1, 'numOfRows': 3}
+HTTP 400 <?xml version="1.0" encoding="UTF-8"?>
+<OpenAPI_ServiceResponse>
+<cmmMsgHeader>
+  <errMsg>NO_OPENAPI_SERVICE_ERROR</errMsg>
+  <returnAuthMsg>해당 오픈API 서비스가 없거나 폐기됨</returnAuthMsg>
+  <returnReasonCode>12</returnReasonCode>
+</cmmMsgHeader>
+</OpenAPI_ServiceResponse>
+
+--- https://apis.data.go.kr/1741000/pharmacies {'pageNo': 1, 'numOfRows': 3, 'returnType': 'json'}
+HTTP 400 {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
+--- https://apis.data.go.kr/1741000/pharmacies {'pageNo': 1, 'numOfRows': 3, 'returnType': 'json'}
+HTTP 400 {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
+--- https://apis.data.go.kr/1741000/pharmacies/info {'pageNo': 1, 'numOfRows': 3, 'returnType': 'json'}
+OK 200 {"response":{"body":{"dataType":"JSON","items":{"item":[{"BPLC_NM":"현약국","CLSBIZ_YMD":"","CRD_INFO_X":"342681.233709508","CRD_INFO_Y":"190013.675540566","DAT_UPDT_PNT":"2026-10-14 21:30:52","DAT_UPDT_SE":"I","DSGN_YMD":"2026-10-13","DTL_SALS_STTS_CD":"13","DTL_SALS_STTS_NM":"영업중","LAST_MDFCN_PNT":"2026-10-13 17:19:50","LCPMT_RTRCN_YMD":"","LCPMT_YMD":"2026-10-13","LCTN_ZIP":"","LOTNO_ADDR":"경상남도 창원시 마산합포구 중앙동3가 4-44 삼성한약방","MNG_NO":"PHMD120265670066084000006","OPN_ATMY_GRP_CD":"5670000","PMCY_SALS_AREA":"80","ROAD_NM_ADDR":"경상남도 창원시 마산합포구 3·15대로 236, 삼성한약방 101호 (중앙동3가)","ROAD_NM_ZIP":"51732","SALS_STTS_CD":"01","SALS_STTS_NM":"영업/정상","TCBIZ_BGNG_YMD":"","TCBIZ_END_YMD":"","TELNO":"055-221-0341"},{"BPLC_NM":"메디빅약국","CLSBIZ_YMD":"","CRD_INFO_X":"213010.115138226","CRD_INFO_Y":"258388.2838494
+--- https://apis.data.go.kr/1741000/pharmacies/getList {'pageNo': 1, 'numOfRows': 3, 'returnType': 'json'}
+HTTP 400 {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
 ===== 약국 https://apis.data.go.kr/1741000/pharmacies
-ERROR: HTTP Error 400: Bad Request
+ERROR: HTTP 400: {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
 ===== 의원 https://apis.data.go.kr/1741000/clinics
-ERROR: HTTP Error 400: Bad Request
+ERROR: HTTP 400: {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
 ===== 병원 https://apis.data.go.kr/1741000/hospitals
-ERROR: HTTP Error 400: Bad Request
+ERROR: HTTP 400: {
+  "OpenAPI_ServiceResponse": {
+    "cmmMsgHeader": {
+      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
+      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
+      "returnReasonCode": "12"
+    }
+  }
+}
+
