@@ -105,16 +105,16 @@ F_SUBJ = ["MDEXM_SBJCT_CN_NM"]
 
 
 def fetch_recent(url, since):
-    """서울 주소만, 최신 인허가 순으로 받다가 기준일보다 오래된 페이지가 나오면 멈춘다."""
+    """서울 주소 + 인허가일 since(YYYYMMDD) 이후만 서버에서 걸러 받는다."""
+    extra = {**SEOUL_FILTER, "cond[LCPMT_YMD::GTE]": since}
     rows, page = [], 1
-    while page <= 60:
+    while page <= 50:
         data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": page,
-                                   "numOfRows": PAGE_SIZE, "returnType": "json", **SEOUL_FILTER})
+                                   "numOfRows": PAGE_SIZE, "returnType": "json", **extra})
         batch = find_rows(data) or []
         rows.extend(batch)
-        dates = [ymd(pick(r, F_DATE)) for r in batch]
-        newest = max([d for d in dates if d] or [""])
-        if not batch or len(batch) < PAGE_SIZE or newest < since:
+        total = find_total(data)
+        if len(batch) < PAGE_SIZE or (total is not None and len(rows) >= total):
             break
         page += 1
     return rows
@@ -134,7 +134,7 @@ def collect():
         if url not in cache:
             try:
                 cache[url] = fetch_recent(url, since)
-                print(f"[조회] {url.split('/')[-2]}: 서울 {len(cache[url])}건 확인")
+                print(f"[조회] {url.split('/')[-2]}: 서울 신규 후보 {len(cache[url])}건")
             except Exception as e:
                 print(f"[오류] {typ} 조회 실패: {e}")
                 ERRORS.append(typ)
@@ -211,29 +211,14 @@ def pack(items, header):
 
 
 def probe():
-    from collections import Counter
-    url = CONFIG["sources"]["약국"]["url"]
-    for since in ("2026-10-08", "20261008"):
-        extra = {**SEOUL_FILTER, "cond[LCPMT_YMD::GTE]": since}
-        rows, page = [], 1
-        while page <= 30:
-            data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": page, "numOfRows": PAGE_SIZE,
-                                       "returnType": "json", **extra})
-            batch = find_rows(data) or []
-            rows += batch
-            if len(batch) < PAGE_SIZE:
-                break
-            page += 1
-        print(f"--- GTE {since}: total={find_total(data)} 받은={len(rows)}")
-        print("  인허가일 분포:", sorted(Counter(pick(r, F_DATE) for r in rows).items())[-12:])
-        print("  상태:", Counter(pick(r, F_STATUS) for r in rows).most_common(4))
-    # 정렬 기준 확인: 서울 전체 1~3페이지의 인허가일/수정일
-    for page in (1, 2, 3):
-        data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": page, "numOfRows": PAGE_SIZE,
-                                   "returnType": "json", **SEOUL_FILTER})
-        rows = find_rows(data) or []
-        print(f"--- 서울 {page}페이지: 인허가일 {min(pick(r, F_DATE) for r in rows)}~{max(pick(r, F_DATE) for r in rows)}, "
-              f"수정시점 {min(r.get('DAT_UPDT_PNT','') for r in rows)}~{max(r.get('DAT_UPDT_PNT','') for r in rows)}")
+    since = (datetime.now(KST) - timedelta(days=CONFIG.get("lookback_days", 7))).strftime("%Y%m%d")
+    for typ, src in CONFIG.get("sources", {}).items():
+        try:
+            rows = fetch_recent(src["url"], since)
+            print(f"[{typ}] 서울 {since} 이후 {len(rows)}건:",
+                  [(pick(r, F_NAME), pick(r, F_KIND), pick(r, F_DATE)) for r in rows[:5]])
+        except Exception as e:
+            print(f"[{typ}] 오류: {str(e)[:300]}")
 
 
 def main():
