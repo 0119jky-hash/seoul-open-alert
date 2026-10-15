@@ -83,57 +83,49 @@ def find_total(obj):
     return None
 
 
-def ep(typ):
-    v = CONFIG.get("endpoints", {}).get(typ)
-    if isinstance(v, str):
-        return v, {}
-    return (v or {}).get("url"), (v or {}).get("params", {})
+SEOUL_FILTER = {"cond[ROAD_NM_ADDR::LIKE]": "서울특별시"}
+F_SUBJ = ["MDEXM_SBJCT_CN_NM"]
 
 
-def fetch_all(url, extra=None):
+def fetch_recent(url, since):
+    """서울 주소만, 최신 인허가 순으로 받다가 기준일보다 오래된 페이지가 나오면 멈춘다."""
     rows, page = [], 1
-    while True:
+    while page <= 60:
         data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": page,
-                                   "numOfRows": PAGE_SIZE, "returnType": "json", "type": "json", **(extra or {})})
+                                   "numOfRows": PAGE_SIZE, "returnType": "json", **SEOUL_FILTER})
         batch = find_rows(data) or []
         rows.extend(batch)
-        total = find_total(data)
-        if not batch or len(batch) < PAGE_SIZE or (total is not None and len(rows) >= total):
+        dates = [ymd(pick(r, F_DATE)) for r in batch]
+        newest = max([d for d in dates if d] or [""])
+        if not batch or len(batch) < PAGE_SIZE or newest < since:
             break
         page += 1
     return rows
 
 
-def gu_of(addr):
-    m = re.search(r"서울(?:특별시|시)?\s+(\S+?구)\b", addr)
-    return m.group(1) if m else ""
-
-
-def ymd(s):
-    d = re.sub(r"\D", "", s)[:8]
-    return d if len(d) == 8 else ""
-
-
-def is_open(status):
-    return not any(w in status for w in ("폐업", "취소", "말소", "휴업"))
-
-
 def collect():
     since = (datetime.now(KST) - timedelta(days=CONFIG.get("lookback_days", 7))).strftime("%Y%m%d")
     want_gu = set(CONFIG.get("gu") or [])
-    out = []
+    sources = CONFIG.get("sources", {})
+    cache, out = {}, []
     for typ in CONFIG.get("types", []):
-        url, extra = ep(typ)
-        if not url:
-            print(f"[건너뜀] {typ}: endpoints에 API 주소가 없음")
+        src = sources.get(typ)
+        if not src:
+            print(f"[건너뜀] {typ}: sources에 없음")
             continue
-        try:
-            rows = fetch_all(url, extra)
-        except Exception as e:
-            print(f"[오류] {typ} 조회 실패: {e}")
-            continue
-        print(f"[조회] {typ}: 전체 {len(rows)}건")
-        for r in rows:
+        url = src["url"]
+        if url not in cache:
+            try:
+                cache[url] = fetch_recent(url, since)
+                print(f"[조회] {url.split('/')[-2]}: 서울 {len(cache[url])}건 확인")
+            except Exception as e:
+                print(f"[오류] {typ} 조회 실패: {e}")
+                cache[url] = []
+        kinds = src.get("kinds")
+        for r in cache[url]:
+            kind = pick(r, F_KIND)
+            if kinds and kind not in kinds:
+                continue
             addr = pick(r, F_ROAD) or pick(r, F_LOT)
             gu = gu_of(addr) or gu_of(pick(r, F_LOT))
             if not gu or (want_gu and gu not in want_gu):
@@ -141,14 +133,10 @@ def collect():
             d = ymd(pick(r, F_DATE))
             if not d or d < since or not is_open(pick(r, F_STATUS)):
                 continue
-            kind = pick(r, F_KIND)
-            # 의원/병원이 한 API에 섞여 오는 경우 업종명으로 다시 거른다.
-            label = typ
-            if kind and typ in ("의원", "병원") and typ not in kind:
-                continue
+            subj = ", ".join([x.strip() for x in pick(r, F_SUBJ).split(",") if x.strip()][:3])
             ident = pick(r, F_ID) or f"{typ}|{pick(r, F_NAME)}|{addr}"
-            out.append({"id": ident, "type": label, "name": pick(r, F_NAME), "gu": gu,
-                        "date": d, "addr": addr})
+            out.append({"id": ident, "type": kind or typ, "name": pick(r, F_NAME), "gu": gu,
+                        "date": d, "addr": re.sub(r"^서울특별시\s+", "", addr), "subj": subj})
     out.sort(key=lambda x: (x["date"], x["gu"]), reverse=True)
     return out
 
@@ -184,7 +172,8 @@ def kakao_send(token, text, link):
 
 
 def line(it):
-    return f"[{it['type']}] {it['name']}\n{it['gu']} · {it['date'][4:6]}/{it['date'][6:]} 인허가\n{it['addr']}"
+    subj = f" · {it['subj']}" if it.get("subj") else ""
+    return f"[{it['type']}] {it['name']}\n{it['date'][4:6]}/{it['date'][6:]} 인허가{subj}\n{it['addr']}"
 
 
 def pack(items, header):
@@ -203,45 +192,17 @@ def pack(items, header):
     return msgs
 
 
-def probe_variants():
-    url = "https://apis.data.go.kr/1741000/pharmacies/info"
-    since = (datetime.now(KST) - timedelta(days=7)).strftime("%Y-%m-%d")
-    tries = [
-        {"cond[LCPMT_YMD::GTE]": since},
-        {"cond[LCPMT_YMD::GTE]": since.replace("-", "")},
-        {"cond[ROAD_NM_ADDR::LIKE]": "서울특별시"},
-        {"cond[OPN_ATMY_GRP_CD::EQ]": "3220000"},
-    ]
-    for extra in tries:
-        print(f"--- 조건 시험 {extra}")
-        try:
-            data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 2,
-                                       "returnType": "json", **extra})
-            rows = find_rows(data) or []
-            print("totalCount:", find_total(data), "| 예:", [(r.get("BPLC_NM"), r.get("LCPMT_YMD"), (r.get("ROAD_NM_ADDR") or "")[:20]) for r in rows])
-        except Exception as e:
-            print("ERR", str(e)[:300])
-
-
 def probe():
-    probe_variants()
-    for typ in CONFIG.get("endpoints", {}):
-        url, extra = ep(typ)
-        print(f"===== {typ} {url}")
+    since = (datetime.now(KST) - timedelta(days=CONFIG.get("lookback_days", 7))).strftime("%Y%m%d")
+    for typ, src in CONFIG.get("sources", {}).items():
         try:
-            data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3,
-                                       "returnType": "json", "type": "json", **extra})
+            data = http_get_json(src["url"], {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 5,
+                                              "returnType": "json", **SEOUL_FILTER})
+            rows = find_rows(data) or []
+            print(f"[{typ}] 서울 전체 {find_total(data)}건, 최신 5건:",
+                  [(pick(r, F_NAME), pick(r, F_KIND), pick(r, F_DATE)) for r in rows])
         except Exception as e:
-            print("ERROR:", e)
-            continue
-        rows = find_rows(data)
-        print("totalCount:", find_total(data))
-        if rows:
-            print("fields:", list(rows[0].keys()))
-            for r in rows[:3]:
-                print(json.dumps(r, ensure_ascii=False))
-        else:
-            print("raw:", json.dumps(data, ensure_ascii=False)[:1500])
+            print(f"[{typ}] 오류: {str(e)[:300]}")
 
 
 def main():
