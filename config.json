@@ -4,7 +4,9 @@
   "types": [
     "약국",
     "의원",
-    "병원"
+    "병원",
+    "치과의원",
+    "한의원"
   ],
   "lookback_days": 7,
   "dashboard_days": 30,
