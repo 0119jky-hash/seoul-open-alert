@@ -30,6 +30,7 @@ jobs:
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
           KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
           KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+          KAKAO_REFRESH_TOKEN_2: ${{ secrets.KAKAO_REFRESH_TOKEN_2 }}
           KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
           ALERT_LINK: https://claude.ai/artifact/89uqcW5PT79eQUoAoaFq9z
         run: |
@@ -41,17 +42,19 @@ jobs:
           else python alert.py 2>&1 | tee state/last_run.txt; fi
 
       - name: 카카오 리프레시 토큰 갱신
-        if: hashFiles('.new_refresh_token') != ''
+        if: always() && hashFiles('.new_tokens/*') != ''
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          if [ -n "$GH_TOKEN" ]; then
-            gh secret set KAKAO_REFRESH_TOKEN --repo "${{ github.repository }}" < .new_refresh_token
-            echo "리프레시 토큰을 Secret에 저장했어요"
-          else
-            echo "::warning::GH_PAT이 없어 새 리프레시 토큰을 저장하지 못했어요"
-          fi
-          rm -f .new_refresh_token
+          for f in .new_tokens/*; do
+            name=$(basename "$f")
+            if [ -n "$GH_TOKEN" ]; then
+              gh secret set "$name" --repo "${{ github.repository }}" < "$f" && echo "$name 저장"
+            else
+              echo "::warning::GH_PAT이 없어 $name 을 저장하지 못했어요"
+            fi
+          done
+          rm -rf .new_tokens
 
       - name: 알림 이력 저장
         if: always()

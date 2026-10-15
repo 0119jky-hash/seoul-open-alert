@@ -182,10 +182,13 @@ def write_dashboard(found, notified_ids):
 
 
 # ---------- 카카오 ----------
-def kakao_token():
+RECIPIENTS = [("KAKAO_REFRESH_TOKEN", "나"), ("KAKAO_REFRESH_TOKEN_2", "두 번째 받는 사람")]
+
+
+def kakao_token(secret_name):
     body = {"grant_type": "refresh_token",
             "client_id": os.environ["KAKAO_REST_KEY"],
-            "refresh_token": os.environ["KAKAO_REFRESH_TOKEN"]}
+            "refresh_token": os.environ[secret_name]}
     if os.environ.get("KAKAO_CLIENT_SECRET"):
         body["client_secret"] = os.environ["KAKAO_CLIENT_SECRET"]
     req = urllib.request.Request("https://kauth.kakao.com/oauth/token",
@@ -193,9 +196,10 @@ def kakao_token():
     with urllib.request.urlopen(req, timeout=30) as r:
         tok = json.loads(r.read())
     if tok.get("refresh_token"):
-        # 리프레시 토큰이 새로 나오면 워크플로가 GitHub Secret을 갱신한다.
-        open(os.path.join(ROOT, ".new_refresh_token"), "w").write(tok["refresh_token"])
-        print("[카카오] 리프레시 토큰 갱신됨")
+        # 리프레시 토큰이 새로 나오면 워크플로가 같은 이름의 GitHub Secret을 갱신한다.
+        os.makedirs(os.path.join(ROOT, ".new_tokens"), exist_ok=True)
+        open(os.path.join(ROOT, ".new_tokens", secret_name), "w").write(tok["refresh_token"])
+        print(f"[카카오] {secret_name} 갱신됨")
     return tok["access_token"]
 
 
@@ -267,15 +271,25 @@ def main():
     if dry:
         for m in msgs:
             print("----\n" + m)
-    elif msgs and not os.environ.get("KAKAO_REFRESH_TOKEN"):
-        print("[카카오] 아직 연결 전이라 발송을 건너뜁니다 (대시보드는 갱신)")
-        dry = True
     elif msgs:
-        token = kakao_token()
-        for m in msgs:
-            kakao_send(token, m, link)
-            time.sleep(1)
-        print(f"[카카오] {len(msgs)}개 메시지 발송")
+        targets = [(n, who) for n, who in RECIPIENTS if os.environ.get(n)]
+        if not targets:
+            print("[카카오] 아직 연결 전이라 발송을 건너뜁니다 (대시보드는 갱신)")
+            dry = True
+        sent = 0
+        for name, who in targets:
+            try:
+                token = kakao_token(name)
+                for m in msgs:
+                    kakao_send(token, m, link)
+                    time.sleep(1)
+                sent += 1
+                print(f"[카카오] {who}에게 {len(msgs)}개 메시지 발송")
+            except Exception as e:
+                print(f"[카카오] {who} 발송 실패: {e}")
+        if targets and not sent:
+            print("[중단] 모든 받는 사람에게 발송 실패 — 이력을 저장하지 않고 다음 회차에 다시 보냅니다")
+            sys.exit(1)
     if not dry:
         seen |= {x["id"] for x in recent}
         os.makedirs(os.path.dirname(SEEN_PATH), exist_ok=True)

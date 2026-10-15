@@ -6,6 +6,11 @@ on:
       code:
         description: "카카오 로그인 후 주소창의 code= 뒤 값 (10분 안에 실행)"
         required: true
+      recipient:
+        description: "누구 카톡을 연결하나요"
+        type: choice
+        default: "나"
+        options: ["나", "두 번째 받는 사람"]
       redirect_uri:
         description: "카카오 앱에 등록한 Redirect URI"
         default: "https://localhost"
@@ -21,6 +26,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           CODE: ${{ github.event.inputs.code }}
           REDIRECT: ${{ github.event.inputs.redirect_uri }}
+          SECRET_NAME: ${{ github.event.inputs.recipient == '두 번째 받는 사람' && 'KAKAO_REFRESH_TOKEN_2' || 'KAKAO_REFRESH_TOKEN' }}
         run: |
           echo "::add-mask::$CODE"
           ARGS=(-d grant_type=authorization_code -d "client_id=$REST_KEY" --data-urlencode "redirect_uri=$REDIRECT" -d "code=$CODE")
@@ -33,8 +39,8 @@ jobs:
             exit 1
           fi
           echo "::add-mask::$REFRESH"; echo "::add-mask::$ACCESS"
-          echo -n "$REFRESH" | gh secret set KAKAO_REFRESH_TOKEN --repo "${{ github.repository }}"
-          TEMPLATE='{"object_type":"text","text":"✅ 카카오 연결 완료! 이제 서울 신규개설 알림을 이 채팅으로 보내드려요.","link":{"web_url":"https://github.com","mobile_web_url":"https://github.com"}}'
+          echo -n "$REFRESH" | gh secret set "$SECRET_NAME" --repo "${{ github.repository }}"
+          TEMPLATE='{"object_type":"text","text":"✅ 카카오 연결 완료! 이제 서울 신규개설 알림을 이 채팅으로 보내드려요.","link":{"web_url":"https://claude.ai/artifact/89uqcW5PT79eQUoAoaFq9z","mobile_web_url":"https://claude.ai/artifact/89uqcW5PT79eQUoAoaFq9z"}}'
           curl -sS https://kapi.kakao.com/v2/api/talk/memo/default/send \
             -H "Authorization: Bearer $ACCESS" --data-urlencode "template_object=$TEMPLATE" | jq -c .
-          echo "완료: KAKAO_REFRESH_TOKEN 저장됨"
+          echo "완료: $SECRET_NAME 저장됨"
