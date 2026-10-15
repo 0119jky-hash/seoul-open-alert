@@ -1,0 +1,6 @@
+===== 약국 https://apis.data.go.kr/1741000/pharmacies
+ERROR: HTTP Error 400: Bad Request
+===== 의원 https://apis.data.go.kr/1741000/clinics
+ERROR: HTTP Error 400: Bad Request
+===== 병원 https://apis.data.go.kr/1741000/hospitals
+ERROR: HTTP Error 400: Bad Request
