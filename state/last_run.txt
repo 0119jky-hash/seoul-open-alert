@@ -1,2 +1,2 @@
 ::notice::나 발송 성공
-::error::두 번째 받는 사람 발송 실패 403 {"msg":"insufficient scopes.","code":-402,"api_type":"TALK_MEMO_DEFAULT_SEND","required_scopes":["talk_message"],"allowed_scopes":[]}
+::notice::두 번째 받는 사람 발송 성공
