@@ -1,11 +1,13 @@
 {
-  "_설명": "gu: 알림 받을 서울 구 목록(비우면 서울 전체). types: 받을 업종. endpoints: 업종별 공공데이터포털 API 주소(활용신청 후 채움).",
+  "_설명": "gu: 알림 받을 서울 구 목록(비우면 서울 전체). types: 받을 업종. endpoints: 업종별 API 주소와 추가 조건.",
   "gu": [],
   "types": ["약국", "의원", "병원"],
   "lookback_days": 7,
   "endpoints": {
-    "약국": "https://apis.data.go.kr/1741000/pharmacies",
-    "의원": "https://apis.data.go.kr/1741000/clinics",
-    "병원": "https://apis.data.go.kr/1741000/hospitals"
+    "약국": {"url": "https://apis.data.go.kr/1741000/pharmacies"},
+    "의원": {"url": "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList",
+             "params": {"sidoCd": "110000", "clCd": "31", "_type": "json"}},
+    "병원": {"url": "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList",
+             "params": {"sidoCd": "110000", "clCd": "21", "_type": "json"}}
   }
 }

@@ -16,13 +16,13 @@ SERVICE_KEY = os.environ.get("DATA_GO_KR_KEY", "")
 PAGE_SIZE = 1000
 
 # 필드 이름은 API 버전마다 달라서 후보를 순서대로 찾는다.
-F_ID = ["MNG_NO", "mgtNo", "MGT_NO", "관리번호"]
-F_NAME = ["BPLC_NM", "bplcNm", "사업장명"]
-F_DATE = ["LCPMT_YMD", "apvPermYmd", "APV_PERM_YMD", "인허가일자"]
+F_ID = ["ykiho", "MNG_NO", "mgtNo", "MGT_NO", "관리번호"]
+F_NAME = ["yadmNm", "BPLC_NM", "bplcNm", "사업장명"]
+F_DATE = ["estbDd", "LCPMT_YMD", "apvPermYmd", "APV_PERM_YMD", "인허가일자"]
 F_STATUS = ["SALS_STTS_NM", "trdStateNm", "TRD_STATE_NM", "DTL_SALS_STTS_NM", "dtlStateNm", "영업상태명"]
-F_ROAD = ["ROAD_NM_ADDR", "rdnWhlAddr", "RDN_WHL_ADDR", "도로명전체주소"]
+F_ROAD = ["addr", "ROAD_NM_ADDR", "rdnWhlAddr", "RDN_WHL_ADDR", "도로명전체주소"]
 F_LOT = ["LOTNO_ADDR", "siteWhlAddr", "SITE_WHL_ADDR", "소재지전체주소"]
-F_KIND = ["BZSTAT_SE_NM", "uptaeNm", "UPTAE_NM", "MDCL_INST_SE_NM", "업태구분명", "의료기관종별명"]
+F_KIND = ["clCdNm", "BZSTAT_SE_NM", "uptaeNm", "UPTAE_NM", "MDCL_INST_SE_NM", "업태구분명", "의료기관종별명"]
 
 
 def pick(row, keys):
@@ -80,11 +80,18 @@ def find_total(obj):
     return None
 
 
-def fetch_all(url):
+def ep(typ):
+    v = CONFIG.get("endpoints", {}).get(typ)
+    if isinstance(v, str):
+        return v, {}
+    return (v or {}).get("url"), (v or {}).get("params", {})
+
+
+def fetch_all(url, extra=None):
     rows, page = [], 1
     while True:
         data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": page,
-                                   "numOfRows": PAGE_SIZE, "returnType": "json", "type": "json"})
+                                   "numOfRows": PAGE_SIZE, "returnType": "json", "type": "json", **(extra or {})})
         batch = find_rows(data) or []
         rows.extend(batch)
         total = find_total(data)
@@ -113,12 +120,12 @@ def collect():
     want_gu = set(CONFIG.get("gu") or [])
     out = []
     for typ in CONFIG.get("types", []):
-        url = CONFIG.get("endpoints", {}).get(typ)
+        url, extra = ep(typ)
         if not url:
             print(f"[건너뜀] {typ}: endpoints에 API 주소가 없음")
             continue
         try:
-            rows = fetch_all(url)
+            rows = fetch_all(url, extra)
         except Exception as e:
             print(f"[오류] {typ} 조회 실패: {e}")
             continue
@@ -194,11 +201,12 @@ def pack(items, header):
 
 
 def probe():
-    for typ, url in CONFIG.get("endpoints", {}).items():
+    for typ in CONFIG.get("endpoints", {}):
+        url, extra = ep(typ)
         print(f"===== {typ} {url}")
         try:
             data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3,
-                                       "returnType": "json", "type": "json"})
+                                       "returnType": "json", "type": "json", **extra})
         except Exception as e:
             print("ERROR:", e)
             continue
