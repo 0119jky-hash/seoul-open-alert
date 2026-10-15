@@ -5,8 +5,7 @@
   "lookback_days": 7,
   "endpoints": {
     "약국": {"url": "https://apis.data.go.kr/1741000/pharmacies"},
-    "의원": {"url": "https://apis.data.go.kr/B551182/hospInfoServicev2/getHospBasisList",
-             "params": {"sidoCd": "110000", "clCd": "31", "_type": "json"}},
+    "의원": {"url": "https://apis.data.go.kr/1741000/clinics"},
     "병원": {"url": "https://apis.data.go.kr/1741000/hospitals"}
   }
 }
