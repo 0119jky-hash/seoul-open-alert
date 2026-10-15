@@ -29,17 +29,21 @@ jobs:
           SECRET_NAME: ${{ github.event.inputs.recipient == '두 번째 받는 사람' && 'KAKAO_REFRESH_TOKEN_2' || 'KAKAO_REFRESH_TOKEN' }}
         run: |
           echo "::add-mask::$CODE"
+          if [ -z "$REST_KEY" ]; then echo "::error::KAKAO_REST_KEY Secret이 비어 있어요"; exit 1; fi
           ARGS=(-d grant_type=authorization_code -d "client_id=$REST_KEY" --data-urlencode "redirect_uri=$REDIRECT" -d "code=$CODE")
           [ -n "$CLIENT_SECRET" ] && ARGS+=(-d "client_secret=$CLIENT_SECRET")
           RES=$(curl -sS https://kauth.kakao.com/oauth/token "${ARGS[@]}")
           REFRESH=$(echo "$RES" | jq -r '.refresh_token // empty')
           ACCESS=$(echo "$RES" | jq -r '.access_token // empty')
           if [ -z "$REFRESH" ]; then
-            echo "토큰 발급 실패: $(echo "$RES" | jq -c '{error, error_description, error_code}')"
+            echo "::error::카카오 토큰 발급 실패 $(echo "$RES" | jq -c '{error, error_description, error_code}')"
             exit 1
           fi
           echo "::add-mask::$REFRESH"; echo "::add-mask::$ACCESS"
-          echo -n "$REFRESH" | gh secret set "$SECRET_NAME" --repo "${{ github.repository }}"
+          if [ -z "$GH_TOKEN" ]; then echo "::error::GH_PAT Secret이 비어 있어요"; exit 1; fi
+          if ! echo -n "$REFRESH" | gh secret set "$SECRET_NAME" --repo "${{ github.repository }}" 2>err.txt; then
+            echo "::error::GitHub Secret 저장 실패 $(head -c 300 err.txt)"; exit 1
+          fi
           TEMPLATE='{"object_type":"text","text":"✅ 카카오 연결 완료! 이제 서울 신규개설 알림을 이 채팅으로 보내드려요.","link":{"web_url":"https://claude.ai/artifact/89uqcW5PT79eQUoAoaFq9z","mobile_web_url":"https://claude.ai/artifact/89uqcW5PT79eQUoAoaFq9z"}}'
           curl -sS https://kapi.kakao.com/v2/api/talk/memo/default/send \
             -H "Authorization: Bearer $ACCESS" --data-urlencode "template_object=$TEMPLATE" | jq -c .
