@@ -265,9 +265,31 @@ def probe():
         print(x)
 
 
+def test_send():
+    link = os.environ.get("ALERT_LINK", "https://claude.ai")
+    for name, who in RECIPIENTS:
+        if not load_refresh(name):
+            print(f"::warning::{who}: 연결 정보 없음")
+            continue
+        try:
+            token = kakao_token(name)
+        except urllib.error.HTTPError as e:
+            print(f"::error::{who} 토큰 갱신 실패 {e.code} {e.read().decode('utf-8','replace')[:300]}")
+            continue
+        try:
+            kakao_send(token, f"🔔 신규개설 알림 테스트 ({who})\n이 메시지가 보이면 정상이에요.", link)
+            print(f"::notice::{who} 발송 성공")
+        except urllib.error.HTTPError as e:
+            print(f"::error::{who} 발송 실패 {e.code} {e.read().decode('utf-8','replace')[:300]}")
+        except Exception as e:
+            print(f"::error::{who} 발송 실패 {str(e)[:300]}")
+
+
 def main():
     if "--probe" in sys.argv:
         return probe()
+    if "--test" in sys.argv:
+        return test_send()
     dry = "--dry" in sys.argv
     seen = set(json.load(open(SEEN_PATH, encoding="utf-8"))) if os.path.exists(SEEN_PATH) else set()
     first_run = not os.path.exists(SEEN_PATH)

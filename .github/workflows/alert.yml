@@ -9,7 +9,7 @@ on:
         description: "run = 실제 발송, dry = 발송 없이 미리보기, probe = API 구조 확인"
         default: run
         type: choice
-        options: [run, dry, probe]
+        options: [run, dry, probe, test]
 
 permissions:
   contents: write
@@ -37,7 +37,8 @@ jobs:
           MODE="${{ github.event.inputs.mode || 'run' }}"
           mkdir -p state
           set -o pipefail
-          if [ "$MODE" = "probe" ]; then python alert.py --probe 2>&1 | tee state/last_run.txt
+          if [ "$MODE" = "test" ]; then python alert.py --test 2>&1 | tee state/last_run.txt
+          elif [ "$MODE" = "probe" ]; then python alert.py --probe 2>&1 | tee state/last_run.txt
           elif [ "$MODE" = "dry" ]; then python alert.py --dry 2>&1 | tee state/last_run.txt
           else python alert.py 2>&1 | tee state/last_run.txt; fi
 
