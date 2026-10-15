@@ -204,25 +204,23 @@ def pack(items, header):
 
 
 def probe_variants():
-    base = "https://apis.data.go.kr/1741000/pharmacies"
+    url = "https://apis.data.go.kr/1741000/pharmacies/info"
+    since = (datetime.now(KST) - timedelta(days=7)).strftime("%Y-%m-%d")
     tries = [
-        (base, {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3}),
-        (base, {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3, "returnType": "json"}),
-        (base, {"ServiceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3, "returnType": "json"}),
-        (base + "/info", {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3, "returnType": "json"}),
-        (base + "/getList", {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3, "returnType": "json"}),
+        {"cond[LCPMT_YMD::GTE]": since},
+        {"cond[LCPMT_YMD::GTE]": since.replace("-", "")},
+        {"cond[ROAD_NM_ADDR::LIKE]": "서울특별시"},
+        {"cond[OPN_ATMY_GRP_CD::EQ]": "3220000"},
     ]
-    for url, params in tries:
-        shown = {k: v for k, v in params.items() if k.lower() != "servicekey"}
-        print(f"--- {url} {shown}")
+    for extra in tries:
+        print(f"--- 조건 시험 {extra}")
         try:
-            q = urllib.parse.urlencode(params)
-            with urllib.request.urlopen(f"{url}?{q}", timeout=60) as r:
-                print("OK", r.status, r.read().decode("utf-8", "replace")[:800])
-        except urllib.error.HTTPError as e:
-            print("HTTP", e.code, e.read().decode("utf-8", "replace")[:600])
+            data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 2,
+                                       "returnType": "json", **extra})
+            rows = find_rows(data) or []
+            print("totalCount:", find_total(data), "| 예:", [(r.get("BPLC_NM"), r.get("LCPMT_YMD"), (r.get("ROAD_NM_ADDR") or "")[:20]) for r in rows])
         except Exception as e:
-            print("ERR", e)
+            print("ERR", str(e)[:300])
 
 
 def probe():
