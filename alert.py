@@ -83,6 +83,23 @@ def find_total(obj):
     return None
 
 
+ERRORS = []
+
+
+def gu_of(addr):
+    m = re.search(r"서울(?:특별시|시)?\s+(\S+?구)(?=\s|$)", addr)
+    return m.group(1) if m else ""
+
+
+def ymd(s):
+    d = re.sub(r"\D", "", s)[:8]
+    return d if len(d) == 8 else ""
+
+
+def is_open(status):
+    return not any(w in status for w in ("폐업", "취소", "말소", "휴업"))
+
+
 SEOUL_FILTER = {"cond[ROAD_NM_ADDR::LIKE]": "서울특별시"}
 F_SUBJ = ["MDEXM_SBJCT_CN_NM"]
 
@@ -120,6 +137,7 @@ def collect():
                 print(f"[조회] {url.split('/')[-2]}: 서울 {len(cache[url])}건 확인")
             except Exception as e:
                 print(f"[오류] {typ} 조회 실패: {e}")
+                ERRORS.append(typ)
                 cache[url] = []
         kinds = src.get("kinds")
         for r in cache[url]:
@@ -212,6 +230,9 @@ def main():
     seen = set(json.load(open(SEEN_PATH, encoding="utf-8"))) if os.path.exists(SEEN_PATH) else set()
     first_run = not os.path.exists(SEEN_PATH)
     found = collect()
+    if ERRORS:
+        print(f"[중단] 조회 실패: {', '.join(ERRORS)} — 이번 회차는 발송과 이력 저장을 건너뜁니다")
+        sys.exit(1)
     new = [x for x in found if x["id"] not in seen]
     print(f"[결과] 기간 내 {len(found)}건, 새로 알릴 {len(new)}건")
     today = datetime.now(KST).strftime("%m/%d")
