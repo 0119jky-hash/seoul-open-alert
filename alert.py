@@ -211,16 +211,29 @@ def pack(items, header):
 
 
 def probe():
-    since = (datetime.now(KST) - timedelta(days=CONFIG.get("lookback_days", 7))).strftime("%Y%m%d")
-    for typ, src in CONFIG.get("sources", {}).items():
-        try:
-            data = http_get_json(src["url"], {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 5,
-                                              "returnType": "json", **SEOUL_FILTER})
-            rows = find_rows(data) or []
-            print(f"[{typ}] 서울 전체 {find_total(data)}건, 최신 5건:",
-                  [(pick(r, F_NAME), pick(r, F_KIND), pick(r, F_DATE)) for r in rows])
-        except Exception as e:
-            print(f"[{typ}] 오류: {str(e)[:300]}")
+    from collections import Counter
+    url = CONFIG["sources"]["약국"]["url"]
+    for since in ("2026-10-08", "20261008"):
+        extra = {**SEOUL_FILTER, "cond[LCPMT_YMD::GTE]": since}
+        rows, page = [], 1
+        while page <= 30:
+            data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": page, "numOfRows": PAGE_SIZE,
+                                       "returnType": "json", **extra})
+            batch = find_rows(data) or []
+            rows += batch
+            if len(batch) < PAGE_SIZE:
+                break
+            page += 1
+        print(f"--- GTE {since}: total={find_total(data)} 받은={len(rows)}")
+        print("  인허가일 분포:", sorted(Counter(pick(r, F_DATE) for r in rows).items())[-12:])
+        print("  상태:", Counter(pick(r, F_STATUS) for r in rows).most_common(4))
+    # 정렬 기준 확인: 서울 전체 1~3페이지의 인허가일/수정일
+    for page in (1, 2, 3):
+        data = http_get_json(url, {"serviceKey": SERVICE_KEY, "pageNo": page, "numOfRows": PAGE_SIZE,
+                                   "returnType": "json", **SEOUL_FILTER})
+        rows = find_rows(data) or []
+        print(f"--- 서울 {page}페이지: 인허가일 {min(pick(r, F_DATE) for r in rows)}~{max(pick(r, F_DATE) for r in rows)}, "
+              f"수정시점 {min(r.get('DAT_UPDT_PNT','') for r in rows)}~{max(r.get('DAT_UPDT_PNT','') for r in rows)}")
 
 
 def main():
