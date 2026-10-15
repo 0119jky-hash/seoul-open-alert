@@ -1,78 +1,26 @@
---- https://apis.data.go.kr/1741000/pharmacies {'pageNo': 1, 'numOfRows': 3}
-HTTP 400 <?xml version="1.0" encoding="UTF-8"?>
-<OpenAPI_ServiceResponse>
-<cmmMsgHeader>
-  <errMsg>NO_OPENAPI_SERVICE_ERROR</errMsg>
-  <returnAuthMsg>해당 오픈API 서비스가 없거나 폐기됨</returnAuthMsg>
-  <returnReasonCode>12</returnReasonCode>
-</cmmMsgHeader>
-</OpenAPI_ServiceResponse>
-
---- https://apis.data.go.kr/1741000/pharmacies {'pageNo': 1, 'numOfRows': 3, 'returnType': 'json'}
-HTTP 400 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
-      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
-      "returnReasonCode": "12"
-    }
-  }
-}
-
---- https://apis.data.go.kr/1741000/pharmacies {'pageNo': 1, 'numOfRows': 3, 'returnType': 'json'}
-HTTP 400 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
-      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
-      "returnReasonCode": "12"
-    }
-  }
-}
-
---- https://apis.data.go.kr/1741000/pharmacies/info {'pageNo': 1, 'numOfRows': 3, 'returnType': 'json'}
-OK 200 {"response":{"body":{"dataType":"JSON","items":{"item":[{"BPLC_NM":"현약국","CLSBIZ_YMD":"","CRD_INFO_X":"342681.233709508","CRD_INFO_Y":"190013.675540566","DAT_UPDT_PNT":"2026-10-14 21:30:52","DAT_UPDT_SE":"I","DSGN_YMD":"2026-10-13","DTL_SALS_STTS_CD":"13","DTL_SALS_STTS_NM":"영업중","LAST_MDFCN_PNT":"2026-10-13 17:19:50","LCPMT_RTRCN_YMD":"","LCPMT_YMD":"2026-10-13","LCTN_ZIP":"","LOTNO_ADDR":"경상남도 창원시 마산합포구 중앙동3가 4-44 삼성한약방","MNG_NO":"PHMD120265670066084000006","OPN_ATMY_GRP_CD":"5670000","PMCY_SALS_AREA":"80","ROAD_NM_ADDR":"경상남도 창원시 마산합포구 3·15대로 236, 삼성한약방 101호 (중앙동3가)","ROAD_NM_ZIP":"51732","SALS_STTS_CD":"01","SALS_STTS_NM":"영업/정상","TCBIZ_BGNG_YMD":"","TCBIZ_END_YMD":"","TELNO":"055-221-0341"},{"BPLC_NM":"메디빅약국","CLSBIZ_YMD":"","CRD_INFO_X":"213010.115138226","CRD_INFO_Y":"258388.2838494
---- https://apis.data.go.kr/1741000/pharmacies/getList {'pageNo': 1, 'numOfRows': 3, 'returnType': 'json'}
-HTTP 400 {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
-      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
-      "returnReasonCode": "12"
-    }
-  }
-}
-
-===== 약국 https://apis.data.go.kr/1741000/pharmacies
-ERROR: HTTP 400: {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
-      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
-      "returnReasonCode": "12"
-    }
-  }
-}
-
-===== 의원 https://apis.data.go.kr/1741000/clinics
-ERROR: HTTP 400: {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
-      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
-      "returnReasonCode": "12"
-    }
-  }
-}
-
-===== 병원 https://apis.data.go.kr/1741000/hospitals
-ERROR: HTTP 400: {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "NO_OPENAPI_SERVICE_ERROR",
-      "returnAuthMsg": "해당 오픈API 서비스가 없거나 폐기됨",
-      "returnReasonCode": "12"
-    }
-  }
-}
-
+--- 조건 시험 {'cond[LCPMT_YMD::GTE]': '2026-10-08'}
+totalCount: 949 | 예: [('현약국', '2026-10-13', '경상남도 창원시 마산합포구 3·15대'), ('메디빅약국', '2026-10-13', '전북특별자치도 전주시 완산구 팔달로 ')]
+--- 조건 시험 {'cond[LCPMT_YMD::GTE]': '20261008'}
+totalCount: 14 | 예: [('현약국', '2026-10-13', '경상남도 창원시 마산합포구 3·15대'), ('메디빅약국', '2026-10-13', '전북특별자치도 전주시 완산구 팔달로 ')]
+--- 조건 시험 {'cond[ROAD_NM_ADDR::LIKE]': '서울특별시'}
+totalCount: 13436 | 예: [('옵티마웰니스뮤지엄명동센트럴약국', '2026-10-13', '서울특별시 중구 명동8길 43, 1~'), ('명동유네스코도레미약국', '2026-10-13', '서울특별시 중구 명동길 52, 1층 ')]
+--- 조건 시험 {'cond[OPN_ATMY_GRP_CD::EQ]': '3220000'}
+totalCount: 2267 | 예: [('찬스웰약국', '2026-10-07', '서울특별시 강남구 학동로 338, 제'), ('도레미약국', '2026-09-22', '서울특별시 강남구 강남대로 412, ')]
+===== 약국 https://apis.data.go.kr/1741000/pharmacies/info
+totalCount: 70705
+fields: ['BPLC_NM', 'CLSBIZ_YMD', 'CRD_INFO_X', 'CRD_INFO_Y', 'DAT_UPDT_PNT', 'DAT_UPDT_SE', 'DSGN_YMD', 'DTL_SALS_STTS_CD', 'DTL_SALS_STTS_NM', 'LAST_MDFCN_PNT', 'LCPMT_RTRCN_YMD', 'LCPMT_YMD', 'LCTN_ZIP', 'LOTNO_ADDR', 'MNG_NO', 'OPN_ATMY_GRP_CD', 'PMCY_SALS_AREA', 'ROAD_NM_ADDR', 'ROAD_NM_ZIP', 'SALS_STTS_CD', 'SALS_STTS_NM', 'TCBIZ_BGNG_YMD', 'TCBIZ_END_YMD', 'TELNO']
+{"BPLC_NM": "현약국", "CLSBIZ_YMD": "", "CRD_INFO_X": "342681.233709508", "CRD_INFO_Y": "190013.675540566", "DAT_UPDT_PNT": "2026-10-14 21:30:52", "DAT_UPDT_SE": "I", "DSGN_YMD": "2026-10-13", "DTL_SALS_STTS_CD": "13", "DTL_SALS_STTS_NM": "영업중", "LAST_MDFCN_PNT": "2026-10-13 17:19:50", "LCPMT_RTRCN_YMD": "", "LCPMT_YMD": "2026-10-13", "LCTN_ZIP": "", "LOTNO_ADDR": "경상남도 창원시 마산합포구 중앙동3가 4-44 삼성한약방", "MNG_NO": "PHMD120265670066084000006", "OPN_ATMY_GRP_CD": "5670000", "PMCY_SALS_AREA": "80", "ROAD_NM_ADDR": "경상남도 창원시 마산합포구 3·15대로 236, 삼성한약방 101호 (중앙동3가)", "ROAD_NM_ZIP": "51732", "SALS_STTS_CD": "01", "SALS_STTS_NM": "영업/정상", "TCBIZ_BGNG_YMD": "", "TCBIZ_END_YMD": "", "TELNO": "055-221-0341"}
+{"BPLC_NM": "메디빅약국", "CLSBIZ_YMD": "", "CRD_INFO_X": "213010.115138226", "CRD_INFO_Y": "258388.283849404", "DAT_UPDT_PNT": "2026-10-14 22:30:51", "DAT_UPDT_SE": "I", "DSGN_YMD": "", "DTL_SALS_STTS_CD": "13", "DTL_SALS_STTS_NM": "영업중", "LAST_MDFCN_PNT": "2026-10-13 16:46:01", "LCPMT_RTRCN_YMD": "", "LCPMT_YMD": "2026-10-13", "LCTN_ZIP": "", "LOTNO_ADDR": "전북특별자치도 전주시 완산구 서노송동 627-1 세이브존 전주점 지하1층", "MNG_NO": "PHMD120264641050084000006", "OPN_ATMY_GRP_CD": "4641000", "PMCY_SALS_AREA": null, "ROAD_NM_ADDR": "전북특별자치도 전주시 완산구 팔달로 262-6, 세이브존 전주점 지하1층 (서노송동)", "ROAD_NM_ZIP": "54995", "SALS_STTS_CD": "01", "SALS_STTS_NM": "영업/정상", "TCBIZ_BGNG_YMD": "", "TCBIZ_END_YMD": "", "TELNO": "063-288-3700"}
+{"BPLC_NM": "옵티마웰니스뮤지엄명동센트럴약국", "CLSBIZ_YMD": "", "CRD_INFO_X": "198610.941156935", "CRD_INFO_Y": "451065.139145488", "DAT_UPDT_PNT": "2026-10-14 22:30:51", "DAT_UPDT_SE": "I", "DSGN_YMD": "2026-10-13", "DTL_SALS_STTS_CD": "13", "DTL_SALS_STTS_NM": "영업중", "LAST_MDFCN_PNT": "2026-10-13 15:53:24", "LCPMT_RTRCN_YMD": "", "LCPMT_YMD": "2026-10-13", "LCTN_ZIP": "", "LOTNO_ADDR": "서울특별시 중구 충무로2가 66-21", "MNG_NO": "PHMD120263010033084000040", "OPN_ATMY_GRP_CD": "3010000", "PMCY_SALS_AREA": "181", "ROAD_NM_ADDR": "서울특별시 중구 명동8길 43, 1~2층 (충무로2가)", "ROAD_NM_ZIP": "04536", "SALS_STTS_CD": "01", "SALS_STTS_NM": "영업/정상", "TCBIZ_BGNG_YMD": "", "TCBIZ_END_YMD": "", "TELNO": "070-4242-0923"}
+===== 의원 https://apis.data.go.kr/1741000/clinics/info
+totalCount: 125871
+fields: ['BPLC_NM', 'BZSTAT_SE_NM', 'CLSBIZ_YMD', 'CRD_INFO_X', 'CRD_INFO_Y', 'DAT_UPDT_PNT', 'DAT_UPDT_SE', 'DTL_SALS_STTS_CD', 'DTL_SALS_STTS_NM', 'GFA', 'HCWKR_CNT', 'HSPTLZRM_CNT', 'LAST_MDFCN_PNT', 'LCPMT_RTRCN_YMD', 'LCPMT_YMD', 'LCTN_ZIP', 'LOTNO_ADDR', 'MDEXM_SBJCT_CN', 'MDEXM_SBJCT_CN_NM', 'MDLCR_INST_BTP_NM', 'MNG_NO', 'OPN_ATMY_GRP_CD', 'ROAD_NM_ADDR', 'ROAD_NM_ZIP', 'SALS_STTS_CD', 'SALS_STTS_NM', 'SCKBD_CNT', 'TCBIZ_BGNG_YMD', 'TCBIZ_END_YMD', 'TELNO']
+{"BPLC_NM": "편한몸한의원", "BZSTAT_SE_NM": "한의원", "CLSBIZ_YMD": "", "CRD_INFO_X": "336128.86159594", "CRD_INFO_Y": "262620.435474406", "DAT_UPDT_PNT": "2026-10-14 22:00:13", "DAT_UPDT_SE": "I", "DTL_SALS_STTS_CD": "13", "DTL_SALS_STTS_NM": "영업중", "GFA": "168.56", "HCWKR_CNT": "1", "HSPTLZRM_CNT": "0", "LAST_MDFCN_PNT": "2026-10-13 15:11:59", "LCPMT_RTRCN_YMD": "", "LCPMT_YMD": "2026-10-13", "LCTN_ZIP": "", "LOTNO_ADDR": "대구광역시 달서구 이곡동 1244-1 성서롯데시네마", "MDEXM_SBJCT_CN": "303 302 306 308 305 307 301 304", "MDEXM_SBJCT_CN_NM": "한방내과, 한방부인과, 한방소아과, 한방안·이비인후·피부과, 한방신경정신과, 한방재활의학과, 사상체질과, 침구과", "MDLCR_INST_BTP_NM": "한의원", "MNG_NO": "PHMA120263470022041100016", "OPN_ATMY_GRP_CD": "3470000", "ROAD_NM_ADDR": "대구광역시 달서구 성서로 414, 성서롯데시네마 304호 (이곡동)", "ROAD_NM_ZIP": "42620", "SALS_STTS_CD": "01", "SALS_STTS_NM": "영업/정상", "SCKBD_CNT": "0", "TCBIZ_BGNG_YMD": "", "TCBIZ_END_YMD": "", "TELNO": "050-4496-2881"}
+{"BPLC_NM": "뉴셀성형외과의원", "BZSTAT_SE_NM": "의원", "CLSBIZ_YMD": "", "CRD_INFO_X": "203564.630392125", "CRD_INFO_Y": "446844.837336607", "DAT_UPDT_PNT": "2026-10-14 22:00:13", "DAT_UPDT_SE": "I", "DTL_SALS_STTS_CD": "13", "DTL_SALS_STTS_NM": "영업중", "GFA": "286.66", "HCWKR_CNT": "3", "HSPTLZRM_CNT": "0", "LAST_MDFCN_PNT": "2026-10-13 13:37:34", "LCPMT_RTRCN_YMD": "", "LCPMT_YMD": "2026-10-13", "LCTN_ZIP": "", "LOTNO_ADDR": "서울특별시 강남구 청담동 87-11 FIRST LIGHT 타워 4층", "MDEXM_SBJCT_CN": "114 108", "MDEXM_SBJCT_CN_NM": "성형외과, 피부과", "MDLCR_INST_BTP_NM": "의원", "MNG_NO": "PHMA120263220033041100214", "OPN_ATMY_GRP_CD": "3220000", "ROAD_NM_ADDR": "서울특별시 강남구 도산대로 417, FIRST LIGHT 타워 4층 (청담동)", "ROAD_NM_ZIP": "06014", "SALS_STTS_CD": "01", "SALS_STTS_NM": "영업/정상", "SCKBD_CNT": "0", "TCBIZ_BGNG_YMD": "", "TCBIZ_END_YMD": "", "TELNO": "02-0000-0000"}
+{"BPLC_NM": "브이에스라인의원 마곡", "BZSTAT_SE_NM": "의원", "CLSBIZ_YMD": "", "CRD_INFO_X": "185361.901252007", "CRD_INFO_Y": "450908.558147634", "DAT_UPDT_PNT": "2026-10-14 22:00:11", "DAT_UPDT_SE": "I", "DTL_SALS_STTS_CD": "13", "DTL_SALS_STTS_NM": "영업중", "GFA": null, "HCWKR_CNT": null, "HSPTLZRM_CNT": null, "LAST_MDFCN_PNT": "2026-10-13 18:41:09", "LCPMT_RTRCN_YMD": "", "LCPMT_YMD": "2026-10-13", "LCTN_ZIP": "", "LOTNO_ADDR": "서울특별시 강서구 마곡동 796-7", "MDEXM_SBJCT_CN": "", "MDEXM_SBJCT_CN_NM": "", "MDLCR_INST_BTP_NM": "", "MNG_NO": "PHMA120263150037041100025", "OPN_ATMY_GRP_CD": "3150000", "ROAD_NM_ADDR": "서울특별시 강서구 마곡중앙6로 69, 7층 (마곡동)", "ROAD_NM_ZIP": "07803", "SALS_STTS_CD": "01", "SALS_STTS_NM": "영업/정상", "SCKBD_CNT": null, "TCBIZ_BGNG_YMD": "", "TCBIZ_END_YMD": "", "TELNO": "02-6953-1512"}
+===== 병원 https://apis.data.go.kr/1741000/hospitals/info
+totalCount: 8319
+fields: ['BPLC_NM', 'BZSTAT_SE_NM', 'CLSBIZ_YMD', 'CRD_INFO_X', 'CRD_INFO_Y', 'DAT_UPDT_PNT', 'DAT_UPDT_SE', 'DTL_SALS_STTS_CD', 'DTL_SALS_STTS_NM', 'GFA', 'HCWKR_CNT', 'HSPTLZRM_CNT', 'LAST_MDFCN_PNT', 'LCPMT_RTRCN_YMD', 'LCPMT_YMD', 'LCTN_AREA', 'LCTN_ZIP', 'LOTNO_ADDR', 'MDEXM_SBJCT_CN', 'MDEXM_SBJCT_CN_NM', 'MDLCR_INST_BTP_NM', 'MNATH', 'MNG_NO', 'OPN_ATMY_GRP_CD', 'ROAD_NM_ADDR', 'ROAD_NM_ZIP', 'SALS_STTS_CD', 'SALS_STTS_NM', 'SCKBD_CNT', 'TCBIZ_BGNG_YMD', 'TCBIZ_END_YMD', 'TELNO']
+{"BPLC_NM": "감탄병원", "BZSTAT_SE_NM": "병원", "CLSBIZ_YMD": "", "CRD_INFO_X": "", "CRD_INFO_Y": "", "DAT_UPDT_PNT": "2026-10-14 21:00:10", "DAT_UPDT_SE": "U", "DTL_SALS_STTS_CD": "BBBB", "DTL_SALS_STTS_NM": "", "GFA": "2193.77", "HCWKR_CNT": "21", "HSPTLZRM_CNT": "16", "LAST_MDFCN_PNT": "2026-10-13 15:50:55", "LCPMT_RTRCN_YMD": "", "LCPMT_YMD": "2026-10-08", "LCTN_AREA": "2193.77", "LCTN_ZIP": "", "LOTNO_ADDR": "", "MDEXM_SBJCT_CN": "", "MDEXM_SBJCT_CN_NM": "", "MDLCR_INST_BTP_NM": "의사", "MNATH": "시도", "MNG_NO": "202663000002000003", "OPN_ATMY_GRP_CD": "6300000", "ROAD_NM_ADDR": "대전광역시 유성구 계룡로 43-0,  (봉명동)층 (봉명동)", "ROAD_NM_ZIP": "", "SALS_STTS_CD": "01", "SALS_STTS_NM": "영업/정상", "SCKBD_CNT": "62", "TCBIZ_BGNG_YMD": "", "TCBIZ_END_YMD": "", "TELNO": "042-385-1234"}
+{"BPLC_NM": "동암웰스병원", "BZSTAT_SE_NM": "병원", "CLSBIZ_YMD": "", "CRD_INFO_X": "173334.838798668", "CRD_INFO_Y": "440790.021709827", "DAT_UPDT_PNT": "2026-10-08 22:30:01", "DAT_UPDT_SE": "I", "DTL_SALS_STTS_CD": "13", "DTL_SALS_STTS_NM": "영업중", "GFA": null, "HCWKR_CNT": null, "HSPTLZRM_CNT": null, "LAST_MDFCN_PNT": "2026-10-07 17:22:38", "LCPMT_RTRCN_YMD": "", "LCPMT_YMD": "2026-10-07", "LCTN_AREA": "1938.67", "LCTN_ZIP": "", "LOTNO_ADDR": "인천광역시 부평구 십정동 441-5 2,3,4,5,7층", "MDEXM_SBJCT_CN": "", "MDEXM_SBJCT_CN_NM": "", "MDLCR_INST_BTP_NM": "", "MNATH": "", "MNG_NO": "PHMA220263540021021200001", "OPN_ATMY_GRP_CD": "3540000", "ROAD_NM_ADDR": "인천광역시 부평구 백범로 472, 2,3,4,5,7층 (십정동)", "ROAD_NM_ZIP": "21453", "SALS_STTS_CD": "01", "SALS_STTS_NM": "영업/정상", "SCKBD_CNT": null, "TCBIZ_BGNG_YMD": "", "TCBIZ_END_YMD": "", "TELNO": "032-424-1777"}
+{"BPLC_NM": "근로복지공단 울산병원", "BZSTAT_SE_NM": "종합병원", "CLSBIZ_YMD": "", "CRD_INFO_X": "404911.912741587", "CRD_INFO_Y": "231091.973617793", "DAT_UPDT_PNT": "2026-10-03 22:30:00", "DAT_UPDT_SE": "I", "DTL_SALS_STTS_CD": "13", "DTL_SALS_STTS_NM": "영업중", "GFA": "47962", "HCWKR_CNT": "0", "HSPTLZRM_CNT": "91", "LAST_MDFCN_PNT": "2026-10-02 15:54:52", "LCPMT_RTRCN_YMD": "", "LCPMT_YMD": "2026-10-02", "LCTN_AREA": "47962", "LCTN_ZIP": "", "LOTNO_ADDR": "울산광역시 울주군 범서읍 굴화리 12-11 근로복지공단 울산병원", "MDEXM_SBJCT_CN": "412 124 120 119 116 113 111 110 109 106 105 104 102 101", "MDEXM_SBJCT_CN_NM": "내과, 신경과, 외과, 정형외과, 신경외과, 마취통증의학과, 산부인과, 소아청소년과, 이비인후과, 영상의학과, 진단검사의학과, 재활의학과, 직업환경의학과, 통합치의학과", "MDLCR_INST_BTP_NM": "종합병원", "MNATH": "시군구", "MNG_NO": "PHMA220263730017021200002", "OPN_ATMY_GRP_CD": "3730000", "ROAD_NM_ADDR": "울산광역시 울주군 범서읍 굴화강변로 16, 근로복지공단 울산병원", "ROAD_NM_ZIP": "44934", "SALS_STTS_CD": "01", "SALS_STTS_NM": "영업/정상", "SCKBD_CNT": "285", "TCBIZ_BGNG_YMD": "", "TCBIZ_END_YMD": "", "TELNO": "052-702-7100"}
