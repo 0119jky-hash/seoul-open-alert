@@ -5,7 +5,7 @@ GitHub Actions에서 하루 한 번 실행된다.
   python alert.py --probe  API 응답 구조만 출력 (발송 없음)
   python alert.py --dry    발송 없이 보낼 내용만 출력
 """
-import json, os, re, sys, time, urllib.parse, urllib.request
+import json, os, re, sys, time, urllib.error, urllib.parse, urllib.request
 from datetime import datetime, timedelta, timezone
 
 KST = timezone(timedelta(hours=9))
@@ -43,6 +43,9 @@ def http_get_json(url, params):
             return json.loads(body)
         except json.JSONDecodeError:
             raise RuntimeError(f"JSON이 아닌 응답: {body[:400]}")
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", "replace")[:600]
+            raise RuntimeError(f"HTTP {e.code}: {detail}")
         except Exception as e:
             if attempt == 2:
                 raise
@@ -200,7 +203,30 @@ def pack(items, header):
     return msgs
 
 
+def probe_variants():
+    base = "https://apis.data.go.kr/1741000/pharmacies"
+    tries = [
+        (base, {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3}),
+        (base, {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3, "returnType": "json"}),
+        (base, {"ServiceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3, "returnType": "json"}),
+        (base + "/info", {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3, "returnType": "json"}),
+        (base + "/getList", {"serviceKey": SERVICE_KEY, "pageNo": 1, "numOfRows": 3, "returnType": "json"}),
+    ]
+    for url, params in tries:
+        shown = {k: v for k, v in params.items() if k.lower() != "servicekey"}
+        print(f"--- {url} {shown}")
+        try:
+            q = urllib.parse.urlencode(params)
+            with urllib.request.urlopen(f"{url}?{q}", timeout=60) as r:
+                print("OK", r.status, r.read().decode("utf-8", "replace")[:800])
+        except urllib.error.HTTPError as e:
+            print("HTTP", e.code, e.read().decode("utf-8", "replace")[:600])
+        except Exception as e:
+            print("ERR", e)
+
+
 def probe():
+    probe_variants()
     for typ in CONFIG.get("endpoints", {}):
         url, extra = ep(typ)
         print(f"===== {typ} {url}")
