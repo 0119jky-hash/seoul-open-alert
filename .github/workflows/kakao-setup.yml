@@ -29,6 +29,7 @@ jobs:
           SECRET_NAME: ${{ github.event.inputs.recipient == '두 번째 받는 사람' && 'KAKAO_REFRESH_TOKEN_2' || 'KAKAO_REFRESH_TOKEN' }}
         run: |
           echo "::add-mask::$CODE"
+          if [ -z "$GH_TOKEN" ]; then echo "::error::GH_PAT Secret이 비어 있어요"; exit 1; fi
           if [ -z "$REST_KEY" ]; then echo "::error::KAKAO_REST_KEY Secret이 비어 있어요"; exit 1; fi
           ARGS=(-d grant_type=authorization_code -d "client_id=$REST_KEY" --data-urlencode "redirect_uri=$REDIRECT" -d "code=$CODE")
           [ -n "$CLIENT_SECRET" ] && ARGS+=(-d "client_secret=$CLIENT_SECRET")
@@ -40,7 +41,6 @@ jobs:
             exit 1
           fi
           echo "::add-mask::$REFRESH"; echo "::add-mask::$ACCESS"
-          if [ -z "$GH_TOKEN" ]; then echo "::error::GH_PAT Secret이 비어 있어요"; exit 1; fi
           if ! echo -n "$REFRESH" | gh secret set "$SECRET_NAME" --repo "${{ github.repository }}" 2>err.txt; then
             echo "::error::GitHub Secret 저장 실패 $(head -c 300 err.txt)"; exit 1
           fi
