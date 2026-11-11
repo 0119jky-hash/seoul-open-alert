@@ -1,22 +1,5 @@
-[오류] 약국 조회 실패: HTTP 500: {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "APPLICATION_ERROR",
-      "returnAuthMsg": "어플리케이션 에러",
-      "returnReasonCode": "01"
-    }
-  }
-}
-
-[조회] clinics: 서울 20261011 이후 55건
-[오류] 병원 조회 실패: HTTP 500: {
-  "OpenAPI_ServiceResponse": {
-    "cmmMsgHeader": {
-      "errMsg": "APPLICATION_ERROR",
-      "returnAuthMsg": "어플리케이션 에러",
-      "returnReasonCode": "01"
-    }
-  }
-}
-
-[중단] 조회 실패: 약국, 병원 — 이번 회차는 발송과 이력 저장을 건너뜁니다
+[조회] pharmacies: 서울 20261012 이후 30건
+[조회] clinics: 서울 20261012 이후 55건
+[조회] hospitals: 서울 20261012 이후 1건
+[결과] 대시보드 85건, 알림 대상 기간 내 5건, 새로 알릴 0건
+[대시보드] 151건 저장
