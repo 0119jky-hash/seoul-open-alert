@@ -46,8 +46,8 @@ def fmt(row):
 def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else "run"
     if not (URL and KEY):
-        print("::error::LAOS_SUPABASE_URL 또는 LAOS_SUPABASE_SECRET 이 없어요")
-        sys.exit(1)
+        print("::notice::LAOS_SUPABASE_SECRET 이 아직 없어요. 설정 전까지는 건너뜁니다.")
+        return
     if mode == "test":
         token = kakao_token(RECIPIENT)
         kakao_send(token, "📝 라오스 라운지 상담 알림 테스트\n이 메시지가 보이면 정상이에요.", DASH)
