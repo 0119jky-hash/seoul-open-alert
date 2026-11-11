@@ -1,0 +1,51 @@
+name: 라오스 라운지 상담 알림
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # 10분마다 (GitHub 사정으로 몇 분 늦을 수 있음)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "run = 실제 발송, dry = 발송 없이 미리보기, test = 테스트 메시지"
+        default: run
+        type: choice
+        options: [run, dry, test]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kakao-state
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 상담 신청 확인 및 카톡 발송
+        env:
+          LAOS_SUPABASE_URL: https://mqrvxgtxmzpokzddnwsv.supabase.co
+          LAOS_SUPABASE_SECRET: ${{ secrets.LAOS_SUPABASE_SECRET }}
+          LAOS_DASH_LINK: https://supabase.com/dashboard/project/mqrvxgtxmzpokzddnwsv/editor
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+        run: python laos_inquiry.py "${{ github.event.inputs.mode || 'run' }}"
+
+      - name: 카카오 토큰 갱신분 저장
+        if: always()
+        run: |
+          if [ -n "$(git status --porcelain state)" ]; then
+            git config user.name "seoul-open-alert"
+            git config user.email "actions@users.noreply.github.com"
+            git add state
+            git commit -m "카카오 토큰 갱신 (라오스 라운지 알림)"
+            git pull --rebase && git push
+          fi
